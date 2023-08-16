@@ -3,77 +3,87 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Schedules;
+use App\Models\Schedules; // モデル名を修正
+use Illuminate\Support\Facades\DB;
 
 class ScheduleController extends Controller
 {
-    public function create(Request $request, Schedules $schedule){
-        // バリデーション（eventsテーブルの中でNULLを許容していないものをrequired）
+    public function create(Request $request)
+    {
         $request->validate([
-            'schedule_title' => 'required',
+            'schedule_title' => 'required', // フィールド名も修正
             'start_date' => 'required',
             'end_date' => 'required',
         ]);
-        // 登録処理
-        $schedule->event_title = $request->input('schedule_title');
-        $schedule->event_body = $request->input('schedule_body');
+
+        $schedule = new Schedules(); // モデル名を修正
+        $schedule->event_title = $request->input('schedule_title'); // フィールド名も修正
+        $schedule->event_body = $request->input('schedule_body'); // フィールド名も修正
         $schedule->start_date = $request->input('start_date');
-        $schedule->end_date = date("Y-m-d", strtotime("{$request->input('end_date')} +1 day")); // FullCalendarが登録する終了日は仕様で1日ずれるので、その修正を行っている
+        $schedule->end_date = date("Y-m-d", strtotime("{$request->input('end_date')} +1 day"));
         $schedule->save();
 
-        // カレンダー表示画面にリダイレクトする
-        return redirect(route("show"));
+        return redirect()->route("show", ['id' => $schedule->id]);
     }
-    
-     public function get(Request $request, Schedules $schedule){
-        // バリデーション
+
+    public function get(Request $request)
+    {
         $request->validate([
-            'start_date' => 'required|integer',
-            'end_date' => 'required|integer'
+            'start_date' => 'required|date', // 日付のバリデーションを修正
+            'end_date' => 'required|date', // 日付のバリデーションを修正
         ]);
 
-        // 現在カレンダーが表示している日付の期間
-        $start_date = date('Y-m-d', $request->input('start_date') / 1000); // 日付変換（JSのタイムスタンプはミリ秒なので秒に変換）
-        $end_date = date('Y-m-d', $request->input('end_date') / 1000);
-
-        // 予定取得処理（これがaxiosのresponse.dataに入る）
-        return $event->query()
-            // DBから取得する際にFullCalendarの形式にカラム名を変更する
-            ->select(
-                'id',
-                'event_title as title',
-                'event_body as description',
-                'start_date as start',
-                'end_date as end',
-               
-            )
-            // 表示されているカレンダーのeventのみをDBから検索して表示
-            ->where('end_date', '>', $start_date)
-            ->where('start_date', '<', $end_date) // AND条件
+        $schedules = Schedules::select(
+            'id',
+            'event_title as title',
+            'event_body as description',
+            'start_date as start',
+            'end_date as end',
+        )
+            ->where('end_date', '>', $request->input('start_date'))
+            ->where('start_date', '<', $request->input('end_date'))
             ->get();
+
+        return response()->json($schedules);
     }
-     // 予定の更新
-    public function update(Request $request, Schedules $schedule){
-        $input = new Event();
 
-        $input->event_title = $request->input('event_title');
-        $input->event_body = $request->input('event_body');
-        $input->start_date = $request->input('start_date');
-        $input->end_date = date("Y-m-d", strtotime("{$request->input('end_date')} +1 day"));
-        
+    public function update(Request $request)
+    {
+        $input = $request->all();
 
-        // 更新する予定をDBから探し（find）、内容が変更していたらupdated_timeを変更（fill）して、DBに保存する（save）
-        $schedule->find($request->input('id'))->fill($input->attributesToArray())->save(); // fill()の中身はArray型が必要だが、$inputのままではコレクションが返ってきてしまうため、Array型に変換
+        $schedule = Schedules::find($request->input('id'));
+        if ($schedule) {
+            $schedule->event_title = $input['event_title'];
+            $schedule->event_body = $input['event_body'];
+            $schedule->start_date = $input['start_date'];
+            $schedule->end_date = date("Y-m-d", strtotime("{$input['end_date']} +1 day"));
+            $schedule->save();
+        }
 
-        // カレンダー表示画面にリダイレクトする
-        return redirect(route("show"));
+        return redirect()->route("show", ['id' => $schedule->id]);
     }
-    // 予定の削除
-    public function delete(Request $request, Schedules $schedule){
-        // 削除する予定をDBから探し（find）、DBから物理削除する（delete）
-        $schedule->find($request->input('id'))->delete();
 
-        // カレンダー表示画面にリダイレクトする
-        return redirect(route("show"));
+    public function delete(Request $request)
+    {
+        $schedule = Schedules::find($request->input('id'));
+        if ($schedule) {
+            $schedule->delete();
+        }
+
+        return redirect()->route("show");
     }
+     public function show($id)
+    {
+        $schedule = Schedules::find($id);
+
+        if ($schedule) {
+            return view('calendar', ['schedule' => $schedule]);
+        } else {
+            abort(404);
+        }
+    }
+    public function showCreateForm()
+{
+    return view('create_form'); // create_form ビューを表示
+}
 }

@@ -16,6 +16,7 @@
 
                     {{ __('You are logged in!') }}
                 </div>
+                {{Auth::user()->family_role}}
             </div>
         </div>
     </div>

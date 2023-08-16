@@ -26,8 +26,8 @@ let calendar = new Calendar(calendarEl, {
     // 予定をクリックすると予定編集モーダルが表示される
     eventClick: function(info) {
         // console.log(info.event); // info.event内に予定の全情報が入っているので、必要に応じて参照すること
-        document.getElementById("id").value = info.event.id
-         document.getElementById("delete-id").value = info.event.id; // ここを追記
+        document.getElementById("id").value = info.event.id;
+        document.getElementById("delete-id").value = info.event.id; // ここを追記
         document.getElementById("schedule_title").value = info.event.title;
         document.getElementById("start_date").value = formatDate(info.event.start);
         document.getElementById("end_date").value = formatDate(info.event.end, "end");

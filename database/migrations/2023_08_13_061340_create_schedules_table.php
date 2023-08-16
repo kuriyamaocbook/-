@@ -15,6 +15,11 @@ return new class extends Migration
     {
         Schema::create('schedules', function (Blueprint $table) {
             $table->id();
+            $table->string('scadule_title')->comment('スケジュール名');
+            $table->string('scadule_body')->nullable()->comment('スケジュール内容');
+            $table->date('start_date')->comment('開始日');
+            $table->date('end_date')->comment('終了日');
+            $table->string('family_role')->nullable() ;// 家族役割カラムを追加
             $table->timestamps();
         });
     }

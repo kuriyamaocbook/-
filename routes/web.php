@@ -22,10 +22,12 @@ Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
 
 Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
 
+Route::get('/calendar/{id}', [ScheduleController::class, 'show'])->name('calendar.show'); // こちらだけ残す
 
 Auth::routes();
 
 Route::get('/calendar', [ScheduleController::class, 'show'])->name("show"); 
-Route::post('/calendar/create', [ScheduleController::class, 'create'])->name("create"); // 予定の新規追加
-Route::post('/calendar/get',  [ScheduleController::class, 'get'])->name("get"); // DBに登録した予定を取得
-Route::delete('/calendar/delete', [ScheduleController::class, 'delete'])->name("delete"); // 予定の削除
+Route::post('/calendar/create', [ScheduleController::class, 'create'])->name("create");
+Route::post('/calendar/get',  [ScheduleController::class, 'get'])->name("get");
+Route::delete('/calendar/delete', [ScheduleController::class, 'delete'])->name("delete");
+Route::get('/calendar/create', [ScheduleController::class, 'showCreateForm'])->name('calendar.create.form');

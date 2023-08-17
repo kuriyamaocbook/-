@@ -15,6 +15,10 @@
                     @endif
 
                     {{ __('You are logged in!') }}
+                     <!-- 予定を編集するページに遷移するボタン -->
+                     <a href="{{ route('schedule_calendar') }}" class="btn btn-primary">
+                         {{ __('schedule_calendar') }}
+                         </a>
                 </div>
             </div>
         </div>
